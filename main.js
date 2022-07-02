@@ -9,21 +9,21 @@ async function digits() {
     const dsigmoid = y => y * (1 - y);
     const nn = new NeuralNetwork(0.001, sigmoid, dsigmoid, 784, 512, 128, 32, 10);
 
-    const samples = 10;//60000
+    const samples = 60000;
     const images = Array(samples);
     const digits = Array(samples);
+    const timeStart = Date.now();
     const imagesFiles = fs.readdirSync(path);
     for (let i = 0; i < samples; i++) {
         images[i] = fs.readFileSync(path + imagesFiles[i]);
         digits[i] = parseInt(imagesFiles[i].charAt(10) + "");
     }
 
-    const image = await Jimp.read(images[0]);
     const inputs = makeArray(samples, 784);
     for (let i = 0; i < samples; i++) {
+        const image = await Jimp.read(images[i]);
         for (let x = 0; x < 28; x++) {
             for (let y = 0; y < 28; y++) {
-                const image = await Jimp.read(images[i]);
                 const rgba = Jimp.intToRGBA(image.getPixelColor(x,y));
                 const hex = rgba2hex(rgba);
                 inputs[i][x + y * 28] = (Number('0x' + hex) & 0xff) / 255.0;
@@ -31,6 +31,7 @@ async function digits() {
         }
     }
 
+    console.log('It takes: ', ((Date.now() - timeStart) / 1000).toFixed(2) + ' sec' )
     let epochs = 1000;
     for (let i = 1; i < epochs; i++) {
         let right = 0;
